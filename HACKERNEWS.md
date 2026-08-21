@@ -20,36 +20,38 @@ https://nightfabric.codesyo.com
 
 ## First comment (paste right after posting)
 
-Author here. The short version: it's a browser game that's really a playable
-argument about one security idea, and I'd like you to try to break it.
+Author here. It's a browser game, but really it's an argument about one security
+idea that I wanted people to be able to poke at instead of take my word for.
 
-Most of the map runs what the game calls the old stack, and you break into it for
-real. Seven districts, seven classic bugs, each verified server-side rather than
-faked with an animation. One gate reads a JWT and never checks the signature
-(forge alg:none). One stores its password as an unsalted SHA-1 you crack with a
-rainbow table. There's a SQLi gate, an admin/admin gate, a replayed session token
-with no DPoP binding, a 4-digit keypad with no lockout, and an API key that leaks
-out of a config response. For the crypto crowd there's also a vault of 100
-generated ciphers (single-byte and repeating-key XOR, Vigenere, two-time pads).
-You climb a leaderboard by breaking things.
+Most of the map runs deliberately broken software and you break into it for real,
+in a console, against live endpoints. Seven districts, seven different classic
+bugs, and the server actually checks the attack instead of playing a hacking
+animation. One gate reads a JWT and never bothers to check the signature, so you
+forge an alg:none token. One stored its password as an unsalted SHA-1, so a
+rainbow table hands it right back. There's a SQL injection one, an admin/admin
+one, a session token you can replay because nothing binds it to a device, a
+4-digit keypad with no lockout, and an API key that just falls out of a config
+response. If you're the kind of person who enjoys that, there's also a pile of 100
+generated cipher puzzles (XOR, Vigenere, two-time pads). You get points for
+breaking things.
 
-Then there's one district you cannot get into. Same tools, same console. It runs
-on threshold cryptography (Tide), where the signing key is never assembled
-anywhere, so there is nothing to forge or steal, and every exploit that opens the
-other seven does literally nothing. The gate just glitches at you. The whole game
-is that one contrast: the same bag of tricks that owns seven doors dying at the
-eighth. I wanted people to learn that by failing against it, not by reading me
-claim it on a slide.
+Then there's the one district you can't get into. You throw the exact same bag of
+tricks at it and nothing happens. It runs on threshold crypto (Tide), so the
+signing key is never actually assembled anywhere for you to steal or forge, and
+the gate just glitches at you and moves on. That was the whole thing I wanted to
+build: watch every exploit that owns seven doors do absolutely nothing at the
+eighth, and go figure out why. It lands a lot harder when you're the one who can't
+get in.
 
-The login is a real threshold enclave (your password is not stored, not even
-hashed), and the leaderboard is signed, so you can cheese the game but not your
-rank. Free, multiplayer, in the browser.
+Some practical bits: the login is a real enclave (your password isn't stored, not
+even hashed), and the scoreboard is signed, so you can cheat the game but not your
+rank on it. It's free and multiplayer and runs in the browser.
 
-Fair warning since HN (rightly) cares: I used an AI agent to stand up the auth
-backend through the Tide MCP at mcp.tide.org/mcp, but I wrote this myself.
+One thing I'll be upfront about, since HN cares and fairly so: I used an AI agent
+to stand up the whole auth backend through an MCP endpoint (mcp.tide.org/mcp). I
+wrote this post myself.
 
-Come break the golden district. If you get in, that's the bug report I actually
-want.
+If you get into the golden district, I'd honestly love to know how you did it.
 
 Play: https://nightfabric.codesyo.com
-Source: https://github.com/sashyo/nightfabric (MIT)
+Source (MIT): https://github.com/sashyo/nightfabric
