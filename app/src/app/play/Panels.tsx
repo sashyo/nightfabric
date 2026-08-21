@@ -1019,3 +1019,92 @@ export function HackPanel({
     </Panel>
   );
 }
+
+/* ---------------------------------------------------------------- RackPanel */
+
+interface RackChallenge {
+  name: string; kind: string; vuln: string; hint: string; points: number;
+  field: { name: string; label: string; ph: string };
+}
+
+/** A hackable interior server rack. Fetches its challenge and makes you actually
+ *  run the exploit (traversal, cmdi, IDOR, a debug backdoor, or default creds)
+ *  before it dumps its loot and hands you a flag. */
+export function RackPanel({
+  onProbe, onRun, onClaim, onClose,
+}: {
+  onProbe: () => Promise<RackChallenge | null>;
+  onRun: (payload: Record<string, unknown>) => Promise<any>;
+  onClaim: (flag: string) => Promise<number>;
+  onClose: () => void;
+}) {
+  const [c, setC] = useState<RackChallenge | null>(null);
+  const [val, setVal] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [msgs, setMsgs] = useState<{ ok: boolean; text: string }[]>([]);
+  useEffect(() => { onProbe().then(setC).catch(() => setC(null)); }, [onProbe]);
+  const push = (ok: boolean, text: string) => setMsgs((m) => [...m.slice(-30), { ok, text }]);
+
+  const inp: React.CSSProperties = {
+    background: "#06080f", border: "1px solid var(--edge)", color: "var(--text)",
+    fontFamily: "var(--mono)", fontSize: 12.5, padding: "9px 11px", width: "100%",
+  };
+
+  const go = async () => {
+    if (!c || busy || done) return;
+    setBusy(true);
+    try {
+      const r = await onRun({ [c.field.name]: val });
+      if (r?.ok) {
+        push(true, r.note || "rack cracked");
+        if (r.loot?.length) push(true, "loot: " + r.loot.join(" · "));
+        const awarded = await onClaim(r.flag);
+        push(true, awarded > 0 ? `+${awarded} pts banked on the signed board` : "already looted (no points)");
+        setDone(true);
+      } else {
+        push(false, r?.hint || "exploit rejected — try again");
+      }
+    } catch (e: any) { push(false, e?.message ?? String(e)); }
+    setBusy(false);
+  };
+
+  if (!c) return (
+    <Panel title="SERVER RACK" tint="var(--green)" onClose={onClose}>
+      <p style={{ fontSize: 12, color: "var(--dim)" }}>probing the rack…</p>
+    </Panel>
+  );
+
+  return (
+    <Panel title={`HACK // ${c.name}`} tint="var(--green)" onClose={onClose} wide>
+      <p style={{ fontSize: 12.5, color: "var(--text)", lineHeight: 1.7, margin: "0 0 8px" }}>
+        <span style={{ color: "var(--red)" }}>WEAKNESS · </span>{c.vuln}
+      </p>
+      <p style={{ fontSize: 11.5, color: "var(--dim)", lineHeight: 1.7, margin: "0 0 14px" }}>
+        <span style={{ color: "var(--cyan)" }}>HINT · </span>{c.hint}
+      </p>
+      <p className="label" style={{ margin: "0 0 6px" }}>{c.field.label}</p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <input style={{ ...inp, flex: 1, minWidth: 220 }} value={val} placeholder={c.field.ph}
+          disabled={busy || done}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") go(); }} />
+        <button className="nf" style={{ padding: "8px 14px" }} disabled={busy || done} onClick={go}>
+          {done ? "CRACKED" : "RUN EXPLOIT"}
+        </button>
+      </div>
+      {msgs.length > 0 && (
+        <div style={{ marginTop: 14, background: "#06080f", border: "1px solid var(--edge)", padding: "8px 10px", maxHeight: 170, overflow: "auto" }}>
+          {msgs.map((m, i) => (
+            <p key={i} style={{ fontSize: 11, margin: "2px 0", fontFamily: "var(--mono)", color: m.ok ? "var(--green)" : "var(--dim)" }}>
+              {m.ok ? "✔ " : "✕ "}{m.text}
+            </p>
+          ))}
+        </div>
+      )}
+      <p style={{ fontSize: 10, color: "var(--dim)", margin: "12px 0 0", lineHeight: 1.6 }}>
+        This rack runs the old stack, so a real exploit gets in. The golden Vault Core has none of these — nothing to take.
+      </p>
+    </Panel>
+  );
+}

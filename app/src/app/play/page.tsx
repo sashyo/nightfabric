@@ -8,7 +8,7 @@ import {
   type DistrictId,
 } from "@/lib/districts";
 import {
-  StashPanel, VaultPanel, CouncilPanel, RaidPanel, NpcPanel, NukePanel, CodexPanel, DevicePanel, HackPanel,
+  StashPanel, VaultPanel, CouncilPanel, RaidPanel, NpcPanel, NukePanel, CodexPanel, DevicePanel, HackPanel, RackPanel,
   type StashShard, type VaultEntry, type ChangeRequest, type NukeState,
 } from "./Panels";
 import { NPCS_BY_ID, AMBIENT_CHATTER } from "@/lib/npcs";
@@ -85,10 +85,11 @@ export default function Play() {
   const wireSeq = useRef(0);
   const chatInput = useRef<HTMLInputElement>(null);
   const [trace, setTrace] = useState<Trace[]>([]);
-  const [panel, setPanel] = useState<null | "stash" | "vault" | "council" | "raid" | "npc" | "nuke" | "codex" | "device" | "hack">(null);
+  const [panel, setPanel] = useState<null | "stash" | "vault" | "council" | "raid" | "npc" | "nuke" | "codex" | "device" | "hack" | "rack">(null);
   const [talking, setTalking] = useState<{ id: string; line: number } | null>(null);
   const [device, setDevice] = useState<{ device: string; dtype: string; label: string } | null>(null);
   const [hackDistrict, setHackDistrict] = useState<DistrictId | null>(null);
+  const [rackId, setRackId] = useState<string | null>(null);
   const [inside, setInside] = useState<DistrictId | null>(null);
 
   const [stash, setStash] = useState<StashShard[]>([]);
@@ -640,20 +641,7 @@ export default function Play() {
           log("crypto", "the genesis record", "FILED HERE, DAY ZERO: twenty shards. threshold fourteen. no whole key at any instant of the network's life. no admin seat. no operator override. no master credential. the founding act of Sanctum-9 was a subtraction — the deliberate deletion of the one thing every empire before it was built to hold.");
         }
         else if (f.action.startsWith("rack:")) {
-          const id = f.action.slice(5);
-          (async () => {
-            try {
-              const j = await (await fetch(api(`/api/legacy/rack/${id}`))).json();
-              let awarded = j.points ?? 0;
-              try {
-                const cj = await (await secureFetch(api("/api/score/claim"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ flag: j.flag }) })).json();
-                if (cj.already) awarded = 0; else if (typeof cj.awarded === "number") awarded = cj.awarded;
-              } catch { /* claim degrades quietly */ }
-              sfx("hack"); engineRef.current?.pulseFabric(2, 0xff8a2a);
-              if (awarded > 0) { setReward(`☠ RACK DUMPED — +${awarded} pts`); setTimeout(() => setReward(null), 2800); loadBoard(); }
-              log("deny", `hacked ${j.name}`, `${(j.loot || []).join(" · ")} — dumped with no authorization.${awarded > 0 ? ` +${awarded} pts.` : " (already looted)"}`);
-            } catch (e: any) { log("deny", "rack error", e?.message ?? String(e)); }
-          })();
+          document.exitPointerLock?.(); setRackId(f.action.slice(5)); setPanel("rack");
         }
       }
     };
@@ -1088,6 +1076,24 @@ export default function Play() {
               return j;
             } catch (e: any) { return { ok: false, hint: e?.message ?? String(e) }; }
           }}
+        />
+      )}
+      {panel === "rack" && rackId && (
+        <RackPanel
+          onProbe={async () => (await (await fetch(api(`/api/legacy/rack/${rackId}`))).json())}
+          onRun={async (payload) => {
+            const r = await fetch(api(`/api/legacy/rack/${rackId}`), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            return r.json().catch(() => ({ ok: false }));
+          }}
+          onClaim={async (flag) => {
+            try {
+              const cj = await (await secureFetch(api("/api/score/claim"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ flag }) })).json();
+              const awarded = cj.already ? 0 : (typeof cj.awarded === "number" ? cj.awarded : 0);
+              if (awarded > 0) { sfx("hack"); engineRef.current?.pulseFabric(2, 0xff8a2a); setReward(`☠ RACK CRACKED — +${awarded} pts`); setTimeout(() => setReward(null), 2800); loadBoard(); }
+              return awarded;
+            } catch { return 0; }
+          }}
+          onClose={() => { setPanel(null); setRackId(null); }}
         />
       )}
       {panel === "hack" && hackDistrict && (
