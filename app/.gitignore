@@ -1,0 +1,5 @@
+node_modules/
+.next/
+data/tidecloak.json
+data/world.json
+.env.local

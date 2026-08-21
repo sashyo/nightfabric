@@ -1,0 +1,112 @@
+:root {
+  --bg: #04030a;
+  --panel: rgba(8, 10, 20, 0.82);
+  --edge: #1d2b45;
+  --cyan: #00e5ff;
+  --magenta: #ff2d95;
+  --green: #39ff88;
+  --amber: #ffc247;
+  --violet: #b46cff;
+  --red: #ff2b46;
+  --dim: #7d8fa6;
+  --text: #d8e6f2;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  overflow: hidden;
+  height: 100%;
+}
+
+a { color: var(--cyan); }
+
+.scanlines::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  z-index: 9999;
+  mix-blend-mode: multiply;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  backdrop-filter: blur(8px);
+  padding: 12px 14px;
+}
+
+.label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+button.nf {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s, box-shadow 0.14s;
+}
+button.nf:hover:not(:disabled) {
+  background: var(--cyan);
+  color: #02030a;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+}
+button.nf:disabled { opacity: 0.34; cursor: not-allowed; }
+button.nf.magenta { color: var(--magenta); border-color: var(--magenta); }
+button.nf.magenta:hover:not(:disabled) { background: var(--magenta); color: #02030a; box-shadow: 0 0 18px rgba(255,45,149,0.4); }
+button.nf.violet { color: var(--violet); border-color: var(--violet); }
+button.nf.violet:hover:not(:disabled) { background: var(--violet); color: #02030a; }
+button.nf.amber { color: var(--amber); border-color: var(--amber); }
+button.nf.amber:hover:not(:disabled) { background: var(--amber); color: #02030a; }
+button.nf.red { color: var(--red); border-color: var(--red); }
+button.nf.red:hover:not(:disabled) { background: var(--red); color: #02030a; }
+
+.flicker { animation: flicker 3.4s infinite; }
+@keyframes flicker {
+  0%, 96%, 100% { opacity: 1; }
+  97% { opacity: 0.72; }
+  98% { opacity: 1; }
+  99% { opacity: 0.85; }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #06070f; }
+::-webkit-scrollbar-thumb { background: #1d2b45; }
+::-webkit-scrollbar-thumb:hover { background: #2c4266; }
+
+.glitch-overlay {
+  position: absolute; inset: 0; pointer-events: none; z-index: 35;
+  background: repeating-linear-gradient(0deg, rgba(255,43,70,0.18) 0, rgba(255,43,70,0.18) 2px, transparent 3px, transparent 5px);
+  mix-blend-mode: screen; animation: glitchflick 0.4s steps(2) 1;
+}
+@keyframes glitchflick {
+  0% { opacity: 1; transform: translateX(-4px); }
+  20% { opacity: 0.6; transform: translateX(5px); }
+  40% { opacity: 1; transform: translateX(-3px); }
+  60% { opacity: 0.4; transform: translateX(4px); }
+  100% { opacity: 0; transform: none; }
+}

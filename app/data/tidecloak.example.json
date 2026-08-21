@@ -1,0 +1,35 @@
+{
+  "realm": "YOUR_REALM",
+  "auth-server-url": "https://YOUR-CLUSTER.skycloak.io/",
+  "ssl-required": "external",
+  "resource": "nightfabric-client",
+  "public-client": true,
+  "confidential-port": 0,
+  "jwk": {
+    "keys": [
+      {
+        "kid": "REPLACE",
+        "kty": "OKP",
+        "alg": "EdDSA",
+        "use": "sig",
+        "crv": "Ed25519",
+        "x": "REPLACE_WITH_YOUR_REALM_PUBLIC_KEY"
+      }
+    ]
+  },
+  "backgroundUrl": "https://b4cb442d-cef6-4f63-a0dd-423d33bf8fc4.us.skycloak.io/realms/sanctum/tide-idp-resources/images/BACKGROUND_IMAGE",
+  "logoUrl": "https://b4cb442d-cef6-4f63-a0dd-423d33bf8fc4.us.skycloak.io/realms/sanctum/tide-idp-resources/images/LOGO",
+  "homeOrkUrl": "https://ork5.tideprotocol.com",
+  "vendorId": "<generated-by-bootstrap>",
+  "client-origin-auth-http://localhost:3000": "<per-origin-secret-generated-by-bootstrap>",
+  "client-origin-auth-https://nightfabric.codesyo.com": "<per-origin-secret-generated-by-bootstrap>",
+  "client-origin-auth-https://b4cb442d-cef6-4f63-a0dd-423d33bf8fc4.us.skycloak.io": "<per-origin-secret-generated-by-bootstrap>",
+  "gVVK": "<generated-by-bootstrap>",
+  "vvkId": "<generated-by-bootstrap>",
+  "orkUrl": "https://ork5.tideprotocol.com",
+  "payerPublic": "<generated-by-bootstrap>",
+  "obfGVVK": "<generated-by-bootstrap>",
+  "gVRKCertificate": "<generated-by-bootstrap>",
+  "thresholdT": 14,
+  "thresholdN": 20
+}
