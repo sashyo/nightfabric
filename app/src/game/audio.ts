@@ -22,6 +22,10 @@ export class Sfx {
   private step16 = 0;
   private nextNote = 0;
   private mood: "city" | "festival" = "city";
+  /** The MUSIC bus (pad + techno). Separate from SFX so M toggles only the
+   *  soundtrack. Off by default — interactions still make sound. */
+  private musicBus: GainNode | null = null;
+  private musicOn = false;
 
   /** Call from a user gesture (the canvas click) so the context is allowed. */
   resume() {
@@ -30,13 +34,24 @@ export class Sfx {
       if (!AC) return;
       this.ctx = new AC();
       this.master = this.ctx.createGain();
-      this.master.gain.value = this.muted ? 0 : 0.5;
+      this.master.gain.value = 0.55;               // SFX are always audible
       this.master.connect(this.ctx.destination);
+      this.musicBus = this.ctx.createGain();
+      this.musicBus.gain.value = this.musicOn ? 0.85 : 0;   // music OFF by default
+      this.musicBus.connect(this.master);
       this.startPad();
       this.startMusic();
     }
     if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
   }
+
+  /** Toggle just the soundtrack (M). SFX are unaffected. */
+  setMusic(on: boolean) {
+    this.musicOn = on;
+    if (this.musicBus && this.ctx) this.musicBus.gain.setTargetAtTime(on ? 0.85 : 0, this.ctx.currentTime, 0.05);
+  }
+  toggleMusic(): boolean { this.setMusic(!this.musicOn); return this.musicOn; }
+  get musicPlaying() { return this.musicOn; }
 
   /** Shift the techno soundtrack's mood — brighter and busier in the golden Core. */
   setMood(m: "city" | "festival") { this.mood = m; }
@@ -50,13 +65,13 @@ export class Sfx {
     return c;
   }
   private startMusic() {
-    if (!this.ctx || !this.master) return;
-    // music -> saturation (dirt) -> master
+    if (!this.ctx || !this.musicBus) return;
+    // music -> saturation (dirt) -> MUSIC bus (so M can mute just this)
     this.drive = this.ctx.createWaveShaper();
     (this.drive as any).curve = this.makeCurve(2.9);
     this.drive.oversample = "2x";
     const post = this.ctx.createBiquadFilter(); post.type = "lowpass"; post.frequency.value = 5200;
-    this.drive.connect(post); post.connect(this.master);
+    this.drive.connect(post); post.connect(this.musicBus);
     this.music = this.ctx.createGain();
     this.music.gain.value = 0.62;
     this.music.connect(this.drive);
@@ -199,6 +214,20 @@ export class Sfx {
     o.connect(f).connect(g).connect(this.music);
     o.start(t); o.stop(t + dur + 0.02);
   }
+  /** A bright, plucky lead for the catchy top-line hook (two detuned squares). */
+  private mLead(freq: number, t: number, dur: number, vol: number) {
+    if (!this.ctx || !this.music) return;
+    const f = this.ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = this.mood === "festival" ? 5200 : 3600; f.Q.value = 1;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    for (const df of [1, 1.006]) {
+      const o = this.ctx.createOscillator(); o.type = "square"; o.frequency.value = freq * df;
+      o.connect(f); o.start(t); o.stop(t + dur + 0.02);
+    }
+    f.connect(g).connect(this.music);
+  }
 
   private scheduleStep(s: number, t: number) {
     const spb = 60 / Sfx.BPM, step = spb / 4;
@@ -224,8 +253,12 @@ export class Sfx {
     // ACID LINE — a relentless resonant riff on the 8ths, accents on the beat
     const acid = [0, null, 12, null, 3, null, 12, null, 0, null, 7, null, 3, null, 10, null];
     if (acid[b] !== null) this.mAcid(root * 4 * Math.pow(2, (acid[b] as number) / 12), t, step * 1.6, b % 4 === 0);
-    // FESTIVAL: an octave-up acid sparkle doubles the drive
-    if (this.mood === "festival" && acid[b] !== null) this.blipAt(root * 8 * Math.pow(2, (acid[b] as number) / 12), t, step * 0.8, "sawtooth", 0.05);
+    // LEAD HOOK — the catchy top line: a simple singable arch (A A C D E D C A),
+    // two octaves up, on the 8ths. Repeats each bar; the Am->G root shift varies it.
+    const lead = [0, null, 0, null, 3, null, 5, null, 7, null, 5, null, 3, null, 0, null];
+    if (lead[b] !== null) this.mLead(root * 8 * Math.pow(2, (lead[b] as number) / 12), t, step * 1.5, this.mood === "festival" ? 0.14 : 0.1);
+    // FESTIVAL: an octave-up sparkle over the lead
+    if (this.mood === "festival" && lead[b] !== null) this.blipAt(root * 16 * Math.pow(2, (lead[b] as number) / 12), t, step * 0.6, "square", 0.045);
   }
   private blipAt(freq: number, t: number, dur: number, wave: Wave, vol: number) {
     if (!this.ctx || !this.music) return;
@@ -244,12 +277,12 @@ export class Sfx {
     return this.muted;
   }
 
-  /** A low rain/synth pad so the world is never dead silent. */
+  /** A low rain/synth pad — part of the soundtrack, so it rides the music bus. */
   private startPad() {
-    if (!this.ctx || !this.master) return;
+    if (!this.ctx || !this.musicBus) return;
     this.pad = this.ctx.createGain();
     this.pad.gain.value = 0.05;
-    this.pad.connect(this.master);
+    this.pad.connect(this.musicBus);
     for (const [freq, detune] of [[55, 0], [82.4, 6], [110, -5]] as [number, number][]) {
       const o = this.ctx.createOscillator();
       o.type = "sawtooth";

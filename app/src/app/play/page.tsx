@@ -66,7 +66,7 @@ export default function Play() {
     STARTER_CONTRACTS.map((c) => ({ ...c })),
   );
   const [eddies, setEddies] = useState(0);
-  const [muted, setMuted] = useState(false);
+  const [musicOn, setMusicOn] = useState(false);  // soundtrack off by default; M toggles it
   const [reward, setReward] = useState<string | null>(null);
   const [bounties, setBounties] = useState<
     { id: string; title: string; hint: string; event: string; count: number; have: number; reward: number; done: boolean }[]
@@ -536,7 +536,7 @@ export default function Play() {
       if (k === "escape") { (el as HTMLElement | null)?.blur?.(); setPanel(null); return; }
       if (typing || panel) return;
       if (k === "tab") { e.preventDefault(); openPanel("stash"); return; }
-      if (k === "m") { const nm = !muted; setMuted(nm); engineRef.current?.sfx.setMuted(nm); return; }
+      if (k === "m") { const on = engineRef.current?.sfx.toggleMusic() ?? !musicOn; setMusicOn(on); return; }
       const EMOTES: Record<string, string> = {
         "1": "😎 jacked in", "2": "🔥 nice", "3": "💀 rekt",
         "4": "🫡 respect", "5": "👀 watching", "6": "🚨 heads up",
@@ -616,11 +616,34 @@ export default function Play() {
         else if (f.action === "haggle") { sfx("hack"); log("info", "you haggle at the stall", "the vendor knocks off a few eddies and warns you: 'watch your jack round here — this quarter's still the old stack.'"); }
         else if (f.action === "busker") { emote("🎵 tips the busker"); sfx("juke"); log("ok", "you tip the busker", "she nods and plays on — a slow synth line about a golden gate nobody can pick."); }
         else if (f.action === "rumor") { sfx("hack"); const rumors = ["'inside the Core, your shadow can't be worn by anyone else. no one steals your face.'","'twenty ORKs stand around the genesis shard and no fourteen have ever agreed to move it. so it never moves.'","'the Architect burned the one master key and split it into twenty. the Core is a monument to a key that no longer exists.'","'they don't lock anything in there. there's nothing to steal, so there's nothing to guard.'"]; log("info", "you buy a rumour", rumors[Math.floor(Math.random() * rumors.length)] + " — the myths of the golden city."); }
+        else if (f.action === "oracle") {
+          sfx("commit"); engineRef.current?.pulseFabric(2, 0x6cf5ff);
+          const legends = [
+            "THE LEGEND OF THE FIRST NIGHT: the story goes that on the night the Core was sealed, every lock in the old city clicked open at once — because the thing that made a lock worth picking had just stopped existing. Nobody stole anything. There was nothing to reach for.",
+            "THE LEGEND OF THE TWENTY: they say twenty strangers were each handed one shard of the city's first key, told never to meet, and they never have. The key they hold between them has never been whole. That is why the Core has never fallen: you cannot take what was never assembled.",
+            "THE LEGEND OF THE EMPTY THRONE: the Architect is said to have built a throne room at the heart of the Core, sat in it once, and then had it filled with water and turned into a fountain — so no one, including her, could ever rule from it again.",
+            "THE LEGEND OF THE FESTIVAL: the party never ends, they say, because it started the day the people realised nothing here could be taken from them. Stop the music and you would have to admit the fear could come back. So the music never stops.",
+            "THE LEGEND OF THE FACE THIEF: out in the Sprawl a man once wore a hundred stolen faces. He came to the golden gate to steal one more and found he could not even wear his own reflection here. They say he walked into the Drown and was never seen, or perhaps was seen everywhere, as everyone but himself.",
+          ];
+          log("crypto", "the oracle speaks", legends[Math.floor(Math.random() * legends.length)]);
+        }
+        else if (f.action === "statue") {
+          sfx("sign"); engineRef.current?.pulseFabric(2, 0xffd23f);
+          log("crypto", "the architect's plaque", "\"I was asked to build a stronger vault. I removed the vault. A vault is a promise that someone is guarding your things; I did not want you to have to trust a guard. So I took the keys out of the world, mine first. Now no one owns this city, and that is the only way it could ever be yours.\" — THE ARCHITECT");
+        }
+        else if (f.action === "flame") {
+          sfx("commit"); engineRef.current?.pulseFabric(2, 0xffd23f);
+          log("info", "the eternal flame", "they say it has never once gone out, not in a raid, not in a blackout, not in the nuke. it isn't magic. it's just that in a place with nothing to steal, no one ever had a reason to put it out. you warm your hands and, for a moment, believe it.");
+        }
+        else if (f.action === "record") {
+          sfx("sign"); engineRef.current?.pulseFabric(THRESHOLD, 0x6cf5ff);
+          log("crypto", "the genesis record", "FILED HERE, DAY ZERO: twenty shards. threshold fourteen. no whole key at any instant of the network's life. no admin seat. no operator override. no master credential. the founding act of Sanctum-9 was a subtraction — the deliberate deletion of the one thing every empire before it was built to hold.");
+        }
       }
     };
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
-  }, [panel, chatOpen, muted, emote, jackShard, openPanel, askGate, me, sfx, log]);
+  }, [panel, chatOpen, musicOn, emote, jackShard, openPanel, askGate, me, sfx, log]);
 
   const send = async () => {
     const text = draft.trim();
@@ -892,9 +915,9 @@ export default function Play() {
           <button
             className="nf"
             style={{ padding: "4px 8px", fontSize: 9.5, flex: 1 }}
-            onClick={() => { const m = !muted; setMuted(m); engineRef.current?.sfx.setMuted(m); }}
+            onClick={() => { const on = engineRef.current?.sfx.toggleMusic() ?? !musicOn; setMusicOn(on); }}
           >
-            {muted ? "SOUND OFF [M]" : "SOUND ON [M]"}
+            {musicOn ? "MUSIC ON [M]" : "MUSIC OFF [M]"}
           </button>
         </div>
 
@@ -1011,7 +1034,7 @@ export default function Play() {
       {/* controls */}
       <div style={{ position: "absolute", bottom: 14, right: 14, fontSize: 10, color: "var(--dim)", textAlign: "right", lineHeight: 1.8 }}>
         click to look · WASD move · SHIFT sprint<br />
-        E interact · T chat · 1-6 emote · F lamp · M mute<br />
+        E interact · T chat · 1-6 emote · F lamp · M music<br />
         TAB stash · ESC close<br />
         <span style={{ color: "#2d4159" }}>{Math.round(hud.x)}, {Math.round(hud.z)} · {hud.fps} fps</span>
       </div>

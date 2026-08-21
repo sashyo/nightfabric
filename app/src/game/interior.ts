@@ -350,6 +350,40 @@ export function buildInterior(d: District): Interior {
     tickers.push((t, dt) => { shrine.rotation.y += dt * 0.5; });
     props.push({ kind: "prop", action: "wish", label: "MAKE A WISH at the shrine", x: -80, z: 80 });
     props.push({ kind: "prop", action: "ride", label: "HAIL A FLYING CAR — joyride", x: -60, z: -60 });
+
+    // ---- more interactables, each a myth or legend of the golden city ----
+    // The Oracle: a floating orb that speaks the city's legends.
+    const orb = new THREE.Mesh(new THREE.IcosahedronGeometry(3.4, 1), new THREE.MeshBasicMaterial({ color: 0x6cf5ff, wireframe: true, toneMapped: false }));
+    const orbCore = new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 12), new THREE.MeshBasicMaterial({ color: 0xbff6ff, transparent: true, opacity: 0.5, toneMapped: false }));
+    const orbG = new THREE.Group(); orbG.add(orb); orbG.add(orbCore); orbG.position.set(60, 12, 60); group.add(orbG); colliders.push({ x: 60, z: 60, hw: 4, hd: 4 });
+    tickers.push((t, dt) => { orbG.rotation.y += dt * 0.8; orb.rotation.x += dt * 0.5; orbG.position.y = 12 + Math.sin(t * 1.3) * 2; });
+    props.push({ kind: "prop", action: "oracle", label: "ASK THE ORACLE for a legend", x: 60, z: 60 });
+
+    // The Architect's statue — she built the Fabric and left no throne.
+    const statue = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(3, 4.5, 22, 10), new THREE.MeshStandardMaterial({ color: 0x1a1206, emissive: 0xffd23f, emissiveIntensity: 0.22, metalness: 0.95, roughness: 0.25 }));
+    body.position.y = 11; statue.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(2.6, 14, 12), new THREE.MeshStandardMaterial({ color: 0x1a1206, emissive: 0xfff3c0, emissiveIntensity: 0.35, metalness: 0.9, roughness: 0.2 }));
+    head.position.y = 25; statue.add(head);
+    const plaque = makeBillboard("THE ARCHITECT", "she burned the key and walked away", 0xffd23f); plaque.scale.setScalar(0.24); plaque.position.set(0, 32, 0); statue.add(plaque);
+    statue.position.set(-60, 0, 60); group.add(statue); colliders.push({ x: -60, z: 60, hw: 4.5, hd: 4.5 });
+    props.push({ kind: "prop", action: "statue", label: "READ THE ARCHITECT'S PLAQUE", x: -60, z: 60 });
+
+    // The Eternal Flame — a myth that it has never once gone out.
+    const brazier2 = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 4.5, 5, 12), new THREE.MeshStandardMaterial({ color: 0x14100a, emissive: 0xffd23f, emissiveIntensity: 0.4, metalness: 0.8, roughness: 0.3 }));
+    brazier2.position.set(60, 2.5, -40); group.add(brazier2); colliders.push({ x: 60, z: -40, hw: 4, hd: 4 });
+    const FN2 = 70, fp2 = new Float32Array(FN2 * 3), fl2: number[] = [];
+    for (let i = 0; i < FN2; i++) { fp2[i*3]=60+(rand()-0.5)*3; fp2[i*3+1]=6; fp2[i*3+2]=-40+(rand()-0.5)*3; fl2.push(rand()); }
+    const fg2 = new THREE.BufferGeometry(); fg2.setAttribute("position", new THREE.BufferAttribute(fp2, 3));
+    const flame2 = new THREE.Points(fg2, new THREE.PointsMaterial({ color: 0xffd23f, size: 2.4, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }));
+    group.add(flame2);
+    tickers.push((t, dt) => { const p = fg2.getAttribute("position") as THREE.BufferAttribute; for (let i = 0; i < FN2; i++) { fl2[i]+=dt*0.7; if (fl2[i]>1){fl2[i]=0;p.setXYZ(i,60+(rand()-0.5)*3,6,-40+(rand()-0.5)*3);continue;} p.setXYZ(i,p.getX(i)+(rand()-0.5)*0.3,p.getY(i)+9*dt,p.getZ(i)+(rand()-0.5)*0.3);} p.needsUpdate = true; });
+    props.push({ kind: "prop", action: "flame", label: "THE ETERNAL FLAME — sit a while", x: 60, z: -40 });
+
+    // The Genesis Record — an obelisk holding the city's founding.
+    const obelisk = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 3, 34, 4), new THREE.MeshStandardMaterial({ color: 0x0d0f18, emissive: 0x6cf5ff, emissiveIntensity: 0.3, metalness: 0.9, roughness: 0.2 }));
+    obelisk.position.set(-40, 17, 40); obelisk.rotation.y = Math.PI / 4; group.add(obelisk); colliders.push({ x: -40, z: 40, hw: 3, hd: 3 });
+    props.push({ kind: "prop", action: "record", label: "READ THE GENESIS RECORD", x: -40, z: 40 });
   } else {
     /* ============================================================ NON-GOLD */
     // a brazier at the centre (particle fire)
