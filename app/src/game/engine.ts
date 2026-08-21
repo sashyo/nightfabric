@@ -27,6 +27,7 @@ export type Focus =
   | { kind: "raid"; label: string }
   | { kind: "nuke"; label: string }
   | { kind: "breach"; label: string }
+  | { kind: "fabric"; label: string }
   | { kind: "codex"; label: string }
   | { kind: "ice"; attack: string; label: string }
   | { kind: "fun"; action: string; label: string }
@@ -73,7 +74,7 @@ export class Nightfabric {
   private beamLayer = new THREE.Group();
   private rain!: { points: THREE.Points; step: (dt: number) => void };
 
-  private terminals: { kind: "vault" | "council" | "raid" | "nuke" | "breach" | "codex"; pos: THREE.Vector3; mesh: THREE.Group }[] = [];
+  private terminals: { kind: "vault" | "council" | "raid" | "nuke" | "breach" | "fabric" | "codex"; pos: THREE.Vector3; mesh: THREE.Group }[] = [];
   private npcs: NpcObj[] = [];
   private crowd!: { group: THREE.Group; step: (dt: number) => void };
   private players = new Players();
@@ -287,7 +288,8 @@ export class Nightfabric {
     // Deliberately out in the open, in the district everyone can reach. It is
     // safe to leave lying around precisely because pressing it does nothing.
     this.addTerminal("nuke", new THREE.Vector3(0, 0, 96), 0xff2b46, "BLACKWALL PROTOCOL");
-    this.addTerminal("breach", new THREE.Vector3(-70, 0, 40), 0x39ff88, "BREACH TERMINAL");
+    this.addTerminal("breach", new THREE.Vector3(-70, 0, 40), 0xffc247, "BREACH TERMINAL");
+    this.addTerminal("fabric", new THREE.Vector3(-40, 0, 40), 0x00e5ff, "FABRIC TERMINAL");
     this.addTerminal("codex", new THREE.Vector3(30, 0, 70), 0x6cf5ff, "DATAPAD — LORE + CLEARANCE");
 
     // ICE panels — physical hack points, each running one real attack against
@@ -363,7 +365,7 @@ export class Nightfabric {
     return false;
   }
 
-  private addTerminal(kind: "vault" | "council" | "raid" | "nuke" | "breach" | "codex", p: THREE.Vector3, color: number, label: string) {
+  private addTerminal(kind: "vault" | "council" | "raid" | "nuke" | "breach" | "fabric" | "codex", p: THREE.Vector3, color: number, label: string) {
     const g = new THREE.Group();
     const base = new THREE.Mesh(
       new THREE.CylinderGeometry(3.2, 4.2, 1.2, 8),
@@ -1488,7 +1490,9 @@ export class Nightfabric {
               : term.kind === "nuke"
                 ? { kind: "nuke", label: "BLACKWALL PROTOCOL — DETONATOR" }
                 : term.kind === "breach"
-                  ? { kind: "breach", label: "BREACH TERMINAL — attack this game" }
+                  ? { kind: "breach", label: "BREACH TERMINAL — Old Town CTF (break it for points)" }
+                  : term.kind === "fabric"
+                    ? { kind: "fabric", label: "FABRIC TERMINAL — attack Tide itself (it holds)" }
                   : term.kind === "codex"
                     ? { kind: "codex", label: "DATAPAD — read the codex" }
                     : { kind: "raid", label: "CORPO RAID CONSOLE" };

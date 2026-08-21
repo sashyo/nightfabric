@@ -571,6 +571,7 @@ export default function Play() {
       else if (f.kind === "council") openPanel("council");
       else if (f.kind === "nuke") openPanel("nuke");
       else if (f.kind === "breach") { progress("breach"); window.location.assign("/breach"); }
+      else if (f.kind === "fabric") { window.location.assign("/fabric"); }
       else if (f.kind === "codex") { document.exitPointerLock?.(); progress("codex"); setPanel("codex"); }
       else if (f.kind === "ice") { runIce(f.attack); }
       else if (f.kind === "fun") { doFun(f.action); }
