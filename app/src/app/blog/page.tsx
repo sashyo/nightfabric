@@ -60,10 +60,10 @@ export default function Blog() {
             to check.
           </p>
           <p>
-            The security work I actually trust is the boring kind, where getting in wins you nothing.
-            Not clever locks. Just nothing behind the door worth carrying out. If a system never holds a
-            master key, then a stolen login and a forged token and a dumped database all bottom out in
-            the same place: base64 and a shrug. You quit guarding the key by never having one.
+            The security work I actually trust is the boring kind, where getting in wins you nothing,
+            because there was never anything behind the door worth carrying out. If a system never holds
+            a master key, then a stolen login and a forged token and a dumped database all bottom out in
+            the same sad place: base64 and a shrug. You quit guarding the key by never having one.
           </p>
         </Section>
 
