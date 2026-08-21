@@ -50,14 +50,15 @@ export default function Blog() {
 
       <Section>
         <p>
-          This started as a three.js experiment and got out of hand. It's a browser game now: a city
-          called Sanctum-9 with nine districts, and getting into most of them means breaking in for
-          real.
+          I wanted to make a security argument you could feel instead of read. Every demo I have ever
+          sat through just tells you a thing is safe and asks you to trust the slide. I wanted the
+          opposite: a place where you try to break in, and mostly you can, right up until you hit the
+          one door that has nothing to break. So I built a city.
         </p>
         <p>
-          Every gate has its own vulnerability, and you exploit it in an in-game console while the
-          server checks the actual attack instead of playing a scripted "hacking" animation. What's
-          behind the seven you can crack:
+          It's called Sanctum-9. Nine districts, and getting into most of them means actually
+          exploiting them. You do it in an in-game console, and the server checks the real attack
+          instead of playing a "hacking" animation. What's behind the seven you can crack:
         </p>
         <ul style={{ paddingLeft: 20, margin: "6px 0 0" }}>
           <li>Blackwall reads a JWT but never checks the signature, so you forge an <code>alg:none</code> token.</li>
@@ -108,8 +109,10 @@ export default function Blog() {
           Three.js on the front, real threshold auth on the back. The login isn't faked. You make an
           account in an actual enclave, and your password gets checked by a quorum of nodes that never
           see it. The leaderboard is signed too, so you can cheat the game itself but you can't fake
-          your rank. And if you can't win, you can rally a council quorum and nuke the whole board to
-          zero, which no single admin could ever do alone.
+          your rank. And if you're losing, there's a nuclear option: rally a council quorum and
+          detonate the Blackwall Protocol. It doesn't just reset scores. It revokes everyone's vault
+          access, seals every drop ever made, blacks out the city, and effectively bricks the whole
+          instance. No single admin can do it. It takes a signed quorum, which is the point.
         </p>
         <p>
           Full disclosure: I vibe coded most of this. I sat with an AI agent and described what I

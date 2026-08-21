@@ -20,38 +20,36 @@ https://nightfabric.codesyo.com
 
 ## First comment (paste right after posting)
 
-Author here. This started as a three.js experiment and kind of got out of hand.
+Author here. The short version: it's a browser game that's really a playable
+argument about one security idea, and I'd like you to try to break it.
 
-You play a runner in a neon city, and getting into most districts means actually
-breaking in. Every gate has a different real vulnerability that you exploit in a
-little in-game console, and the server checks the genuine attack instead of
-playing a scripted "hacking" animation. One gate reads a JWT but never verifies
-the signature, so you forge an alg:none token. Another stores its password as an
-unsalted SHA-1 that you crack with a rainbow table. There's a SQL injection one,
-an admin/admin one, a 4-digit keypad with no lockout that you just brute force,
-and a couple more. NPCs wandering the streets leak the specific hint each gate
-needs. It's basically a CTF with a plot, and you climb a leaderboard by breaking
-things.
+Most of the map runs what the game calls the old stack, and you break into it for
+real. Seven districts, seven classic bugs, each verified server-side rather than
+faked with an animation. One gate reads a JWT and never checks the signature
+(forge alg:none). One stores its password as an unsalted SHA-1 you crack with a
+rainbow table. There's a SQLi gate, an admin/admin gate, a replayed session token
+with no DPoP binding, a 4-digit keypad with no lockout, and an API key that leaks
+out of a config response. For the crypto crowd there's also a vault of 100
+generated ciphers (single-byte and repeating-key XOR, Vigenere, two-time pads).
+You climb a leaderboard by breaking things.
 
-The reason I actually built it is the one district you can't get into. Same
-tools, same console, but that gate runs on Tide (threshold cryptography), where
-the signing key is never assembled anywhere in the first place, so there's
-nothing to forge or steal. Every exploit that opens the other seven districts
-does absolutely nothing here. The gate just glitches at you. I wanted people to
-find that out by failing against it, rather than reading me assert "this part is
-secure" on a slide. Inside that district it's a permanent festival where nobody
-guards anything, because there's nothing to take, and every other quarter in the
-game is jealous of it.
+Then there's one district you cannot get into. Same tools, same console. It runs
+on threshold cryptography (Tide), where the signing key is never assembled
+anywhere, so there is nothing to forge or steal, and every exploit that opens the
+other seven does literally nothing. The gate just glitches at you. The whole game
+is that one contrast: the same bag of tricks that owns seven doors dying at the
+eighth. I wanted people to learn that by failing against it, not by reading me
+claim it on a slide.
 
-Practical bits: it's free, multiplayer, runs in the browser. The login is a real
-threshold enclave (your password isn't stored, not even as a hash), and scores
-are signed, so you can cheese the game but not your rank on the board.
+The login is a real threshold enclave (your password is not stored, not even
+hashed), and the leaderboard is signed, so you can cheese the game but not your
+rank. Free, multiplayer, in the browser.
 
-Since HN has strong (and fair) feelings about this: I used an AI agent to stand
-up the auth backend through the Tide MCP at mcp.tide.org/mcp, which walks you
-through the threshold setup. I wrote this post myself.
+Fair warning since HN (rightly) cares: I used an AI agent to stand up the auth
+backend through the Tide MCP at mcp.tide.org/mcp, but I wrote this myself.
+
+Come break the golden district. If you get in, that's the bug report I actually
+want.
 
 Play: https://nightfabric.codesyo.com
-Source: https://github.com/sashyo/nightfabric
-
-If you find a way into the golden district, that's the bug report I actually want.
+Source: https://github.com/sashyo/nightfabric (MIT)

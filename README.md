@@ -30,7 +30,7 @@ Plus **The Vault**: 100 procedurally generated, genuinely hard cipher challenges
 
 The golden **Vault Core** runs on [Tide](https://tide.org) threshold cryptography. The signing key is never assembled anywhere, so there is nothing to forge or steal. Every exploit that opens the other seven districts does nothing here; the gate just glitches. Behind it is a grand festival where nobody guards anything, and every other district dreams of getting in. You can only be **raised** into it by a council quorum, never hack your way in.
 
-The scoreboard is signed too, so you can cheat the game but not your rank. And if you can't win, you can rally a council quorum and detonate the **Blackwall Protocol** to nuke the whole leaderboard to zero, which no single admin could ever do alone.
+The scoreboard is signed too, so you can cheat the game but not your rank. And if you can't win, you can rally a council quorum and detonate the **Blackwall Protocol**: it doesn't just reset scores, it revokes `crew-vault-access` from everyone (a real Ragnarok-style offboarding that seals every drop ever made, even ones already read), wipes the board to zero, and blacks out the city. It effectively bricks the whole instance. No single admin could ever do this alone; it takes a signed council quorum.
 
 ## How it's built
 
