@@ -432,6 +432,23 @@ export function buildInterior(d: District): Interior {
     props.push({ kind: "prop", action: "haggle", label: "HAGGLE at the stall", x: Math.cos(0.3) * (R * 0.6) - 6, z: Math.sin(0.3) * (R * 0.6) });
     props.push({ kind: "prop", action: "busker", label: "TIP THE BUSKER", x: 18, z: 20 });
     props.push({ kind: "prop", action: "rumor", label: "BUY A RUMOUR about the golden city", x: -18, z: 20 });
+
+    // Hackable server racks — the interior's own loot to crack (old stack only;
+    // the golden Core has none of these, because there is nothing to take there).
+    const rackSpots: [number, number][] = [[R * 0.42, -R * 0.32], [-R * 0.42, -R * 0.32], [0, -R * 0.5]];
+    rackSpots.forEach((sp, i) => {
+      const [rx, rz] = sp;
+      const rack = new THREE.Mesh(new THREE.BoxGeometry(8, 16, 6), new THREE.MeshStandardMaterial({ color: 0x0a0c14, emissive: c0, emissiveIntensity: 0.15, metalness: 0.7, roughness: 0.5 }));
+      rack.position.set(rx, 8, rz); group.add(rack); colliders.push({ x: rx, z: rz, hw: 4.5, hd: 3.5 });
+      const leds: THREE.Mesh[] = [];
+      for (let k = 0; k < 6; k++) {
+        const led = new THREE.Mesh(new THREE.SphereGeometry(0.4, 6, 6), new THREE.MeshBasicMaterial({ color: 0x39ff88, transparent: true, toneMapped: false }));
+        led.position.set(rx + 3.3, 3 + k * 2.2, rz + 3.1); group.add(led); leds.push(led);
+      }
+      tickers.push((t) => { for (let k = 0; k < leds.length; k++) (leds[k].material as THREE.MeshBasicMaterial).opacity = Math.sin(t * 4 + k * 1.3) > 0 ? 1 : 0.2; });
+      const sign = makeBillboard("SERVER RACK", "old stack · hackable · +pts", 0x39ff88); sign.scale.setScalar(0.2); sign.position.set(rx, 21, rz); group.add(sign);
+      props.push({ kind: "prop", action: `rack:${d.id}-${i + 1}`, label: "HACK THE SERVER RACK", x: rx, z: rz });
+    });
   }
 
   const animate = (t: number, dt: number) => { for (const fn of tickers) fn(t, dt); };
