@@ -3,7 +3,7 @@
 Post as a **Show HN**: title in the title box, the play URL in the URL box, then
 add the comment below as the first reply for context.
 
-(Written to read like a person, not a model — no em-dash sprinkles, no
+(Written to read like a person, not a model. No em-dash sprinkles, no
 "not X, but Y", no rule-of-three cadence, no punchy one-line fragments.)
 
 ---
